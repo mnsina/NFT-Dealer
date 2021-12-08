@@ -8,7 +8,7 @@ The code enables to create through an ERC721 smart contract a public firm which 
 -CEO \
 -CFO \
 -Bids \
--Offers \
+-Offers 
 
 ## Contact Info:
 #### mnsina@uc.cl
