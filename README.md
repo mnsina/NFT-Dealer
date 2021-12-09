@@ -1,5 +1,5 @@
 # NFT-Dealer
-The code enables to create through an ERC721 smart contract a public firm which that buys and sells NFT tokens on the ethereum network.
+The code enables to create through an ERC721 smart contract a public firm that buys and sells NFT tokens on the ethereum network.
 
 ## Enterprise Characteristics:
 
