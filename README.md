@@ -21,10 +21,17 @@ A public firm that buys and sells NFT tokens on the ethereum network through the
 
 ## Instructions to Sell NFT:
 
--1):  \
--2):  \
--3):  \
--4): 
+-1): Use the function "NFT_Client_Offer_New" to offer a NFT at a specific price.\
+\
+-2): Check that the CEO of the has reviewed the offer using the function "NFT_Clients_Offers".  \
+\
+-3): If the offer was accepted first approve control of the NFT token to the enterprise address and then use the function "NFT_Client_Sell" with the bid id that the CEO wrote on the previous step. 
+
+## Instructions to Buy NFT:
+
+-1): Use the function "NFT_Enterprise_Offers" to search active offers.\
+\
+-2): Use the function "NFT_Client_Buy" using the information of the previous step.
 
 ## Enterprise Etherscan Link:
 https://rinkeby.etherscan.io/address/0xf7659ece6c761cd39d1c739ef72668ce381f8305#writeContract
