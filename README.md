@@ -4,12 +4,19 @@ A public firm that buys and sells NFT tokens on the ethereum network through the
 ## Enterprise Characteristics:
 
 -Stocks: There are 100 unissued stock without voting rights, each has a unit price of 0.01 ethers. \
+\
 -Founder: Can change the CFO, CEO and end the enterprise. \
+\
 -CEO: Accepts or rejects clients offers and decides the price at which the NFT's bought by the firm will be sold. \
+\
 -CFO: Decides the amount and when dividends are pay to shareholders. \
+\
 -Enterprise Bids: All enterprise bids are linked to a previous client offer.\
+\
 -Enterprise Offers: All the NFT's that the enterprise offers were bought previously to a client.\
+\
 -Clients Bid: All client bids are linked to a previous enterprise offer. \
+\
 -Clients Offers: All client offers are reviewed by the CEO before being accepted or rejected. 
 
 ## Instructions to Sell NFT:
