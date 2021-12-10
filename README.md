@@ -37,7 +37,8 @@ A public firm that buys and sells NFT tokens on the ethereum network through the
 https://rinkeby.etherscan.io/address/0xf7659ece6c761cd39d1c739ef72668ce381f8305#writeContract
 
 ## Available NFT for sale:
-https://rinkeby.etherscan.io/address/0xf7659ece6c761cd39d1c739ef72668ce381f8305#writeContract
+-1) BAYC Token #1:\
+https://rinkeby.etherscan.io/address/0x6c4a156c9000dfd03f846c68b175bc41344e9b19#readContract
 
 ## Contact Info:
 #### mnsina@uc.cl
