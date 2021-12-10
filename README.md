@@ -1,5 +1,5 @@
 # NFT-Dealer
-A public firm that buys and sells NFT tokens on the ethereum network was created through the use of an ERC721 smart contract.
+A public firm that buys and sells NFT tokens on the ethereum network through the use of an ERC721 smart contract.
 
 ## Enterprise Characteristics:
 
