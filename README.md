@@ -1,17 +1,18 @@
 # NFT-Dealer
-The code enables to create through an ERC721 smart contract a public firm that buys and sells NFT tokens on the ethereum network.
+A public firm that buys and sells NFT tokens on the ethereum network was created through the use of an ERC721 smart contract.
 
 ## Enterprise Characteristics:
 
 -Stocks: There are 100 unissued stock without voting rights, each has a unit price of 0.01 ethers. \
 -Founder: Can change the CFO, CEO and end the enterprise. \
--CEO: Accepts clients offers and the price at which the NFT's bought by the firm will be sold. \
--CFO: Decides when to pay dividends to shareholders. \
--Enterprise Bids: \
--Enterprise Offers: \
--Clients Offers: 
+-CEO: Accepts or rejects clients offers and decides the price at which the NFT's bought by the firm will be sold. \
+-CFO: Decides the amount and when dividends are pay to shareholders. \
+-Enterprise Bids: All enterprise bids are linked to a previous client offer.\
+-Enterprise Offers: All the NFT's that the enterprise offers were bought previously to a client.\
+-Clients Bid: All client bids are linked to a previous enterprise offer. 
+-Clients Offers: All client offers are reviewed by the CEO before being accepted or rejected. 
 
-## Instructions:
+## Instructions to Sell NFT:
 
 -1):  \
 -2):  \
