@@ -8,15 +8,15 @@ The code enables to create through an ERC721 smart contract a public firm that b
 -CEO: Accepts clients offers and the price at which the NFT's bought by the firm will be sold. \
 -CFO: Decides when to pay dividends to shareholders. \
 -Enterprise Bids: \
--Enterprise Offers: \ 
--Clients Offers: \
+-Enterprise Offers: \
+-Clients Offers: 
 
 ## Instructions:
 
 -1):  \
 -2):  \
 -3):  \
--4): \
+-4): 
 
 ## Enterprise Etherscan Link:
 https://rinkeby.etherscan.io/address/0xf7659ece6c761cd39d1c739ef72668ce381f8305#writeContract
