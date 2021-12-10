@@ -23,9 +23,9 @@ A public firm that buys and sells NFT tokens on the ethereum network through the
 
 -1): Use the function "NFT_Client_Offer_New" to offer a NFT at a specific price.\
 \
--2): Check that the CEO of the has reviewed the offer using the function "NFT_Clients_Offers".  \
+-2): Check that the CEO has reviewed the offer using the function "NFT_Clients_Offers".  \
 \
--3): If the offer was accepted first approve control of the NFT token to the enterprise address and then use the function "NFT_Client_Sell" with the bid id that the CEO wrote on the previous step. 
+-3): After the offer is accepted approve control of the NFT token to the enterprise address (NFT Original Contract) and then use the function "NFT_Client_Sell" with the bid id that the CEO wrote on the previous step. 
 
 ## Instructions to Buy NFT:
 
