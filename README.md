@@ -21,23 +21,23 @@ A public firm that buys and sells NFT tokens on the ethereum network through the
 
 ## Instructions to Sell NFT:
 
--1): Use the function "NFT_Client_Offer_New" to offer a NFT at a specific price.\
+1): Use the function "NFT_Client_Offer_New" to offer a NFT at a specific price.\
 \
--2): Check that the CEO has reviewed the offer using the function "NFT_Clients_Offers".  \
+2): Check that the CEO has reviewed the offer using the function "NFT_Clients_Offers".  \
 \
--3): After the offer is accepted approve control of the NFT token to the enterprise address (NFT Original Contract) and then use the function "NFT_Client_Sell" with the bid id that the CEO wrote on the previous step. 
+3): After the offer is accepted approve control of the NFT token to the enterprise address (NFT Original Contract) and then use the function "NFT_Client_Sell" with the bid id that the CEO wrote on the previous step. 
 
 ## Instructions to Buy NFT:
 
--1): Use the function "NFT_Enterprise_Offers" to search active offers.\
+1): Use the function "NFT_Enterprise_Offers" to search active offers.\
 \
--2): Use the function "NFT_Client_Buy" using the information of the previous step.
+2): Use the function "NFT_Client_Buy" using the information of the previous step.
 
 ## Enterprise Etherscan Link:
 https://rinkeby.etherscan.io/address/0xf7659ece6c761cd39d1c739ef72668ce381f8305#writeContract
 
 ## Available NFT for sale:
--1) BAYC Token #1:\
+1) BAYC Token #1:\
 https://rinkeby.etherscan.io/address/0x6c4a156c9000dfd03f846c68b175bc41344e9b19#readContract
 
 ## Contact Info:
