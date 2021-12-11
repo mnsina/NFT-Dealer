@@ -3,7 +3,7 @@ A public firm that buys and sells NFT tokens on the ethereum network through the
 
 ## Enterprise Characteristics:
 
-1) Stocks: There are 100 unissued stock without voting rights, each has a unit price of 0.01 ethers. 
+1) Stocks: There are 100 unissued stocks without voting rights, each has a unit price of 0.01 ethers. 
  
 2) Founder: Can change the CFO, CEO and end the enterprise. 
  
