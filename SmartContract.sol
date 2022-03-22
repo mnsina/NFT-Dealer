@@ -6,12 +6,12 @@ pragma solidity ^0.8.3;
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/ERC721.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC721/utils/ERC721Holder.sol";
 
-contract BasicNFT is ERC721, ERC721Holder {
+contract Crypto_Corp is ERC721, ERC721Holder {
 
 // 0) Variables Declaration:
 
 string public Info = "Tokens represent stocks of an "
-                     "NFT art dealer firm. Initially there are "
+                     "NFT dealer firm. Initially there are "
                      "100 unissued stocks with a unit price of "
                      "0.01 ethers.";
                              
@@ -44,11 +44,13 @@ struct NFT_Transaction{
 
 NFT_Transaction[] public Enterprise_Offers;
 
+mapping(ERC721 => mapping(uint => uint)) public Inventory;
+
 uint TokenCount=0;
 
 // 1) Firm Construction:
 
-constructor() ERC721("NFT Dealer", ":)") {
+constructor() ERC721("The Crypto Corp", "$_$") {
 
 Founder = msg.sender;
 CFO = msg.sender;
@@ -60,6 +62,8 @@ Available_Stocks=100;
 
 // 2) Contract Functions:
 
+event New_Transaction(string _Debit, uint _Amount1, string _Credit, uint _Amount2);
+
 // 2.0) Buy Firm Stocks:
 
 function Buy_Share() external payable {
@@ -67,39 +71,35 @@ require(msg.value == 0.01 ether, "Share value is 0.01 ethers");
 require(Available_Stocks >= 1, "No more stocks available");
 TokenCount=TokenCount+1;
 _mint(msg.sender, TokenCount); 
- Available_Stocks=Available_Stocks-1;
+Available_Stocks=Available_Stocks-1;
+emit New_Transaction("[Asset|Cash]", 0.01 ether, 
+                     "[Equity|Capital]", 0.01 ether);
 } 
 
 // 2.1) Pay Dividends:
 
-function Dividends_Pay(uint Amount) external payable {
- require(Amount <= 1 ether, "Maximum amount is 1 ether");
- require(msg.sender==CFO, "This function is only for the CFO of the firm");
- for (uint i=0; i<100-Available_Stocks; i++){
- if(ownerOf(i+1)!=Enterprise){
- payable(ownerOf(i+1)).transfer(Amount);
- } 
- }
- }
+function Dividends_Pay(uint Amount) external {
+require(Amount <= 1 ether, "Maximum amount is 1 ether");
+require(msg.sender==CFO, "This function is only for the CFO of the firm");
+for (uint i=0; i<100-Available_Stocks; i++){
+if(ownerOf(i+1)!=Enterprise){
+payable(ownerOf(i+1)).transfer(Amount);
+} 
+}
+emit New_Transaction("[Equity|Capital]", Amount*(100-Available_Stocks),
+                     "[Asset|Cash]", Amount*(100-Available_Stocks));
+}
 
-// 2.2) Cash Balances:
+// 2.2) Cash Balance:
 
 function Cash_Firm() external view returns(uint) {
     return(address(this).balance);
 }
 
-function Cash_Personal() public view returns(uint) {
-    return(msg.sender.balance);
-}
-
-// 2.3) NFT Balances:
+// 2.3) NFT Balance:
 
 function NFT_Balance_Firm(ERC721 Contract_NFT) external view returns(uint) {
     return(Contract_NFT.balanceOf(Enterprise));
-}
-
-function NFT_Balance_Personal(ERC721 Contract_NFT) public view returns(uint) {
-     return(Contract_NFT.balanceOf(msg.sender));
 }
 
 // 2.4) Change Executives:
@@ -114,7 +114,7 @@ function Change_CEO(address NewCEO) public {
     CEO=NewCEO;
 }
 
-// 2.5) Buy/Sell NFT Art:
+// 2.5) Buy/Sell NFT:
 
 function NFT_Client_Offer_New(ERC721 Contract_NFT, uint Id, uint Price) public {
     require(Contract_NFT.ownerOf(Id)==msg.sender, "Not the owner of the NFT Token");
@@ -144,6 +144,10 @@ function NFT_Client_Sell(ERC721 Contract_NFT, uint Id, uint Bid) external payabl
      payable(msg.sender).transfer(NFT_Enterprise_Bids[Bid].NFT_Price);
      NFT_Enterprise_Bids[Bid].Active=false;
      NFT_Clients_Offers[Enterprise_Offers[Bid].Offer_Id].Active=false;
+     
+     Inventory[Contract_NFT][Id]=NFT_Enterprise_Bids[Bid].NFT_Price;
+     emit New_Transaction("[Asset|Inventory]", NFT_Enterprise_Bids[Bid].NFT_Price, 
+                          "[Asset|Cash]", NFT_Enterprise_Bids[Bid].NFT_Price);
 }
 
 function NFT_CEO_Offer_New(ERC721 Contract_NFT, uint Id, uint Price) public {
@@ -160,6 +164,12 @@ function NFT_Client_Buy(ERC721 Contract_NFT, uint Id, uint Bid) external payable
      Contract_NFT.approve(CEO, Id);
      Contract_NFT.safeTransferFrom(Enterprise, msg.sender, Id);
      NFT_Enterprise_Offers[Bid].Active=false;
+     
+     emit New_Transaction("[Asset|Cash]", NFT_Enterprise_Offers[Bid].NFT_Price, 
+                          "[Asset|Inventory]", Inventory[Contract_NFT][Id]);
+      emit New_Transaction("[Equity|Cost]", Inventory[Contract_NFT][Id], 
+                           "[Equity|Revenue]", NFT_Enterprise_Offers[Bid].NFT_Price);                    
+     Inventory[Contract_NFT][Id]=0;
 }
 
 // 3) End Contract:
