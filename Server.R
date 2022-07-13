@@ -9,6 +9,9 @@ library(data.table)
 library(DT)
 library(httr)
 library(rjson)
+library(magick)
+library(shinyalert)
+library(waiter)
 
 
 ApiKeyEtherscan<-"QFU3USEYBT19XUWMJX6K5N9HEI5HUQ4IHB"
@@ -36,7 +39,7 @@ function(input, output, session){
     setnames(pass0, old="V1", new = "pass0", skip_absent=TRUE)
     users_db<-cbind(users_db, pass0)
     users_db<-users_db[, Users:=substr(Users, 1, pass0-1)]
-    users_db<-users_db[, Users:=gsub(pattern = " ", replacement = "", Users)]
+    users_db<-users_db[, Users:=tolower(gsub(pattern = " ", replacement = "", Users))]
     users_db<-users_db[, Passwords:=substr(name, pass0+6+9-1, nchar(name))]
     users_db<-users_db[, Passwords:=gsub(pattern = " ", replacement = "", Passwords)]
     users_db<-users_db[, pass0:=NULL]
@@ -66,15 +69,17 @@ function(input, output, session){
   observeEvent(input$Btn1, if(input$Pass1!=input$Pass2) {
     
   shinyjs::alert("Passwords don`t match") } else {
+    
+  if(input$User1!=tolower(input$User1))  {shinyjs::alert("Please use only lowercase letters and digits")} else{
       
-  if(input$User1 %in% users_db2$user) { shinyjs::alert("User already exists") } 
+  if(tolower(input$User1) %in% users_db2$user) { shinyjs::alert("User already exists") } 
       
   else { if(grepl("@", input$User1, fixed=TRUE)==FALSE ) { 
   shinyjs::alert("Please enter an email address") } else {
           
   {new_user<-data.table(user=input$User1, password=input$Pass1, permissions="standard", name=input$User1)
           
-   fwrite(new_user, paste0("User: ", input$User1, " - Pass: ", input$Pass1, ".csv"))
+   fwrite(new_user, paste0("User: ", tolower(input$User1), " - Pass: ", input$Pass1, ".csv"))
           
    drop_upload(paste0("User: ", input$User1, " - Pass: ", input$Pass1, ".csv"), path = "/USERS_DB")
           
@@ -82,7 +87,7 @@ function(input, output, session){
     session$reload()
     
     }}
-    }}
+    }}}
     )
   
   
@@ -97,7 +102,7 @@ function(input, output, session){
   setnames(pass1, old="V1", new = "pass1", skip_absent=TRUE)
   users_db2<-cbind(users_db2, pass1)
   users_db2<-users_db2[, user:=substr(user, 1, pass1-1)]
-  users_db2<-users_db2[, user:=gsub(pattern = " ", replacement = "", user)]
+  users_db2<-users_db2[, user:=tolower(gsub(pattern = " ", replacement = "", user))]
   users_db2<-users_db2[, password:=substr(name, pass1+6+9-1, nchar(name))]
   users_db2<-users_db2[, password:=gsub(pattern = " ", replacement = "", password)]
   users_db2<-users_db2[, pass1:=NULL]
@@ -577,8 +582,11 @@ function(input, output, session){
    
    #5.11 List All Clients Offers
    
-   observeEvent(input$"B-ClientOffer2",{
+    wTable1 <- Waiter$new(id = "table1", color = transparent(.5), html = spin_loaders(15))
+   
+    observeEvent(input$"B-ClientOffer2",{
      
+     wTable1$show()
      
      Transactions<-content(GET(url = "https://api-rinkeby.etherscan.io/api", 
                            query = list(module="account", action="txlist", 
@@ -658,8 +666,8 @@ function(input, output, session){
            
     "))
 
-     
-     output$table1<-renderTable({
+   
+     output$table1<-DT::renderDT({
        
        a<-rbindlist(list(as.list(input$Clients_Offers)))
        
@@ -676,17 +684,108 @@ function(input, output, session){
        }
        
        setcolorder(aa[, Offer_Id:=as.integer(.N:1-1)],  c(6,1,2,3,4,5))
+       
+       #---------------------------------NFT IMAGE-----------------------------------------------------------------
+       for(i in 1:nrow(aa)){
+         
+         NFT_ABI0<-data.table(content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="contract", action="getabi", address=aa[i,NFT], apikey=ApiKeyEtherscan)))$result)
+         Sys.sleep(0.20)
+         
+         if(i==1){
+           NFT_ABI<-data.table(content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="contract", action="getabi", address=aa[i,NFT], apikey=ApiKeyEtherscan)))$result)
+           Sys.sleep(0.20)
+         }
+         
+         else {
+           NFT_ABI<-rbindlist(list(NFT_ABI, NFT_ABI0), fill = TRUE)
+         }
+           Sys.sleep(0.20)
+       }
+       
+       aa<-cbind(aa, NFT_ABI)
+       aa<-setnames(aa, "V1", "NFT_ABI")
+       
+       for(i in 1:nrow(aa)){
+       runjs(paste0("
+       const web3 = new Web3(Web3.givenProvider);
+       var contract1 = new  web3.eth.Contract(", aa[i,NFT_ABI],", '",aa[i,NFT],"');
+       async function prueba(){
+       const myval = await contract1.methods.tokenURI(",aa[i,NFT_Id],").call();
+       console.log(myval);
+       Shiny.setInputValue('Foto",i,"',  myval);
+       }
+       prueba();"))
+         
+         NFT_URI0<-data.table(eval(parse(text=paste0("input$Foto",i))))
+         
+         # JSON Cases:
+         
+         if( grepl("ipfs://", NFT_URI0[1], fixed = TRUE)==TRUE ){  
+         NFT_JSON0<-paste0('https://', substr(NFT_URI0[1], 0, unlist(gregexpr('://', NFT_URI0[1]))[1]-1),
+                           '.io/', substr(NFT_URI0[1], 0, unlist(gregexpr('://', NFT_URI0[1]))[1]-1), '/',
+                           substr(NFT_URI0[1],  unlist(gregexpr('://', NFT_URI0[1]))[1]+3, nchar(NFT_URI0[1])))
+         NFT_JSON0<-data.table(content(GET(url = NFT_JSON0[1]))$image) 
+         } 
+           
+         else{ if( grepl("https://", NFT_URI0[1], fixed = TRUE)==TRUE ){
+         NFT_JSON0<-NFT_URI0[1]
+         NFT_JSON0<-data.table(content(GET(url = NFT_JSON0[1]))$image) 
+         } 
+         else{NFT_JSON0<-data.table("File not found")}
+         }
+         
+         if( grepl("ipfs://", NFT_JSON0[1], fixed = TRUE)==TRUE ){
+         NFT_JSON0<-NFT_JSON0[,V1:=paste0('https://', substr(V1, 0, unlist(gregexpr('://',V1))[1]-1),
+                                              '.io/', substr(V1, 0, unlist(gregexpr('://', V1))[1]-1), '/',
+                                              substr(V1, unlist(gregexpr('://', V1))[1]+3, nchar(V1)))]
+         }
+         
+         else{ if( grepl("https://123", NFT_JSON0[1], fixed = TRUE)==TRUE ){
+           NFT_JSON0<-NFT_JSON0 } 
+           else{NFT_JSON0<-"https://etherscan.io/images/main/nft-placeholder.svg"}
+         }
+         
+         NFT_JSON0<-NFT_JSON0[,V1:=paste0("<img src=", V1," height='52'></img>")]
+         
+         
+         if(i==1) {
+         NFT_URI<-NFT_URI0
+         NFT_JSON<-NFT_JSON0
+         }
+         
+         else {
+           NFT_URI<-rbind(NFT_URI, NFT_URI0)
+           NFT_JSON<-rbind(NFT_JSON, NFT_JSON0)
+         }
+         }
+       
+       NFT_URI<-setnames(NFT_URI, "V1", "NFT_URI", skip_absent=TRUE)
+       NFT_JSON<-setnames(NFT_JSON, "V1", "NFT_JSON", skip_absent=TRUE)
+
+
+         
+       aa<-cbind(aa, NFT_JSON)
+       aa[, NFT_ABI:=NULL]
+       aa<-setnames(aa, "NFT_JSON", "NFT_Image")
+       #---------------------------------NFT IMAGE-----------------------------------------------------------------
+       
+       
+       DT::datatable(aa,  escape = FALSE, filter="top", style = "bootstrap4")
+       
+       })
      
-     }, filter="top")
-     
+     wTable1$hide()
      
    })
    
-   
+  
    #5.12 List All Enterprise Bids
+    
+    wTable2 <- Waiter$new(id = "table2", color = transparent(.5), html = spin_loaders(15))
 
     observeEvent(input$"B-EnterpriseBid1",{
      
+     wTable2$show()
      
      Transactions<-content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="account", action="txlist", 
                            address=ContractAddress, apikey=ApiKeyEtherscan)))
@@ -766,7 +865,7 @@ function(input, output, session){
     "))
      
      
-     output$table2<-renderTable({
+     output$table2<-DT::renderDT({
        
        a<-rbindlist(list(as.list(input$Enterprise_Bids)))
        
@@ -784,8 +883,97 @@ function(input, output, session){
        
        setcolorder(aa[, Bid_Id:=as.integer(.N:1-1)],  c(6,1,2,3,4,5))
        
+       
+       #---------------------------------NFT IMAGE-----------------------------------------------------------------
+       for(i in 1:nrow(aa)){
+         
+         NFT_ABI0<-data.table(content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="contract", action="getabi", address=aa[i,NFT], apikey=ApiKeyEtherscan)))$result)
+         Sys.sleep(0.20)
+         
+         if(i==1){
+           NFT_ABI<-data.table(content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="contract", action="getabi", address=aa[i,NFT], apikey=ApiKeyEtherscan)))$result)
+           Sys.sleep(0.20)
+         }
+         
+         else {
+           NFT_ABI<-rbindlist(list(NFT_ABI, NFT_ABI0), fill = TRUE)
+         }
+         Sys.sleep(0.20)
+       }
+       
+       aa<-cbind(aa, NFT_ABI)
+       aa<-setnames(aa, "V1", "NFT_ABI")
+       
+       for(i in 1:nrow(aa)){
+         runjs(paste0("
+       const web3 = new Web3(Web3.givenProvider);
+       var contract1 = new  web3.eth.Contract(", aa[i,NFT_ABI],", '",aa[i,NFT],"');
+       async function prueba(){
+       const myval = await contract1.methods.tokenURI(",aa[i,NFT_Id],").call();
+       console.log(myval);
+       Shiny.setInputValue('Foto",i,"',  myval);
+       }
+       prueba();"))
+         
+         NFT_URI0<-data.table(eval(parse(text=paste0("input$Foto",i))))
+         
+         # JSON Cases:
+         
+         if( grepl("ipfs://", NFT_URI0[1], fixed = TRUE)==TRUE ){  
+           NFT_JSON0<-paste0('https://', substr(NFT_URI0[1], 0, unlist(gregexpr('://', NFT_URI0[1]))[1]-1),
+                             '.io/', substr(NFT_URI0[1], 0, unlist(gregexpr('://', NFT_URI0[1]))[1]-1), '/',
+                             substr(NFT_URI0[1],  unlist(gregexpr('://', NFT_URI0[1]))[1]+3, nchar(NFT_URI0[1])))
+           NFT_JSON0<-data.table(content(GET(url = NFT_JSON0[1]))$image) 
+         } 
+         
+         else{ if( grepl("https://", NFT_URI0[1], fixed = TRUE)==TRUE ){
+           NFT_JSON0<-NFT_URI0[1]
+           NFT_JSON0<-data.table(content(GET(url = NFT_JSON0[1]))$image) 
+         } 
+           else{NFT_JSON0<-data.table("File not found")}
+         }
+         
+         if( grepl("ipfs://", NFT_JSON0[1], fixed = TRUE)==TRUE ){
+           NFT_JSON0<-NFT_JSON0[,V1:=paste0('https://', substr(V1, 0, unlist(gregexpr('://',V1))[1]-1),
+                                            '.io/', substr(V1, 0, unlist(gregexpr('://', V1))[1]-1), '/',
+                                            substr(V1, unlist(gregexpr('://', V1))[1]+3, nchar(V1)))]
+         }
+         
+         else{ if( grepl("https://123", NFT_JSON0[1], fixed = TRUE)==TRUE ){
+           NFT_JSON0<-NFT_JSON0 } 
+           else{NFT_JSON0<-"https://etherscan.io/images/main/nft-placeholder.svg"}
+         }
+         
+         NFT_JSON0<-NFT_JSON0[,V1:=paste0("<img src=", V1," height='52'></img>")]
+         
+         
+         if(i==1) {
+           NFT_URI<-NFT_URI0
+           NFT_JSON<-NFT_JSON0
+         }
+         
+         else {
+           NFT_URI<-rbind(NFT_URI, NFT_URI0)
+           NFT_JSON<-rbind(NFT_JSON, NFT_JSON0)
+         }
+       }
+       
+       NFT_URI<-setnames(NFT_URI, "V1", "NFT_URI", skip_absent=TRUE)
+       NFT_JSON<-setnames(NFT_JSON, "V1", "NFT_JSON", skip_absent=TRUE)
+       
+       
+       
+       aa<-cbind(aa, NFT_JSON)
+       aa[, NFT_ABI:=NULL]
+       aa<-setnames(aa, "NFT_JSON", "NFT_Image")
+       #---------------------------------NFT IMAGE-----------------------------------------------------------------
+       
+       
+       DT::datatable(aa,  escape = FALSE, filter="top", style = "bootstrap4")
+       
      }, filter="top")
      
+     wTable2$hide()
      
    })      
    
@@ -1021,8 +1209,11 @@ function(input, output, session){
    
    #5.16 List enterprise offers
    
+   wTable3 <- Waiter$new(id = "table3", color = transparent(.5), html = spin_loaders(15))
+   
    observeEvent(input$"B-EnterpriseOffers",{
      
+     wTable3$show() 
      
      Transactions<-content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="account", action="txlist", 
                            address=ContractAddress, apikey=ApiKeyEtherscan)))
@@ -1102,7 +1293,7 @@ function(input, output, session){
     "))
      
      
-     output$table3<-renderTable({
+     output$table3<-DT::renderDT({
        
        a<-rbindlist(list(as.list(input$Enterprise_Offers)))
        
@@ -1121,8 +1312,97 @@ function(input, output, session){
        aa<-aa[, 1:4]
        setcolorder(aa[, Offer_Id:=as.integer(.N:1-1)],  c(5,1,2,3,4))
        
+       #---------------------------------NFT IMAGE-----------------------------------------------------------------
+       for(i in 1:nrow(aa)){
+         
+         NFT_ABI0<-data.table(content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="contract", action="getabi", address=aa[i,NFT], apikey=ApiKeyEtherscan)))$result)
+         Sys.sleep(0.20)
+         
+         if(i==1){
+           NFT_ABI<-data.table(content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="contract", action="getabi", address=aa[i,NFT], apikey=ApiKeyEtherscan)))$result)
+           Sys.sleep(0.20)
+         }
+         
+         else {
+           NFT_ABI<-rbindlist(list(NFT_ABI, NFT_ABI0), fill = TRUE)
+         }
+         Sys.sleep(0.20)
+       }
+       
+       aa<-cbind(aa, NFT_ABI)
+       aa<-setnames(aa, "V1", "NFT_ABI")
+       
+       for(i in 1:nrow(aa)){
+         runjs(paste0("
+       const web3 = new Web3(Web3.givenProvider);
+       var contract1 = new  web3.eth.Contract(", aa[i,NFT_ABI],", '",aa[i,NFT],"');
+       async function prueba(){
+       const myval = await contract1.methods.tokenURI(",aa[i,NFT_Id],").call();
+       console.log(myval);
+       Shiny.setInputValue('Foto",i,"',  myval);
+       }
+       prueba();"))
+         
+         NFT_URI0<-data.table(eval(parse(text=paste0("input$Foto",i))))
+         
+         # JSON Cases:
+         
+         if( grepl("ipfs://", NFT_URI0[1], fixed = TRUE)==TRUE ){  
+           NFT_JSON0<-paste0('https://', substr(NFT_URI0[1], 0, unlist(gregexpr('://', NFT_URI0[1]))[1]-1),
+                             '.io/', substr(NFT_URI0[1], 0, unlist(gregexpr('://', NFT_URI0[1]))[1]-1), '/',
+                             substr(NFT_URI0[1],  unlist(gregexpr('://', NFT_URI0[1]))[1]+3, nchar(NFT_URI0[1])))
+           NFT_JSON0<-data.table(content(GET(url = NFT_JSON0[1]))$image) 
+         } 
+         
+         else{ if( grepl("https://", NFT_URI0[1], fixed = TRUE)==TRUE ){
+           NFT_JSON0<-NFT_URI0[1]
+           NFT_JSON0<-data.table(content(GET(url = NFT_JSON0[1]))$image) 
+         } 
+           else{NFT_JSON0<-data.table("File not found")}
+         }
+         
+         if( grepl("ipfs://", NFT_JSON0[1], fixed = TRUE)==TRUE ){
+           NFT_JSON0<-NFT_JSON0[,V1:=paste0('https://', substr(V1, 0, unlist(gregexpr('://',V1))[1]-1),
+                                            '.io/', substr(V1, 0, unlist(gregexpr('://', V1))[1]-1), '/',
+                                            substr(V1, unlist(gregexpr('://', V1))[1]+3, nchar(V1)))]
+         }
+         
+         else{ if( grepl("https://123", NFT_JSON0[1], fixed = TRUE)==TRUE ){
+           NFT_JSON0<-NFT_JSON0 } 
+           else{NFT_JSON0<-"https://etherscan.io/images/main/nft-placeholder.svg"}
+         }
+         
+         NFT_JSON0<-NFT_JSON0[,V1:=paste0("<img src=", V1," height='52'></img>")]
+         
+         
+         if(i==1) {
+           NFT_URI<-NFT_URI0
+           NFT_JSON<-NFT_JSON0
+         }
+         
+         else {
+           NFT_URI<-rbind(NFT_URI, NFT_URI0)
+           NFT_JSON<-rbind(NFT_JSON, NFT_JSON0)
+         }
+       }
+       
+       NFT_URI<-setnames(NFT_URI, "V1", "NFT_URI", skip_absent=TRUE)
+       NFT_JSON<-setnames(NFT_JSON, "V1", "NFT_JSON", skip_absent=TRUE)
+       
+       
+       
+       aa<-cbind(aa, NFT_JSON)
+       aa[, NFT_ABI:=NULL]
+       aa<-setnames(aa, "NFT_JSON", "NFT_Image")
+       #---------------------------------NFT IMAGE-----------------------------------------------------------------
+       
+       
+       DT::datatable(aa,  escape = FALSE, filter="top", style = "bootstrap4")
+       
+       
      }, filter="top")
      
+     wTable3$hide()
      
    })   
    
@@ -1182,8 +1462,11 @@ function(input, output, session){
    
    #5.18 List all enterprise shareholders
    
+   wTable4 <- Waiter$new(id = "table4", color = transparent(.5), html = spin_loaders(15))
+   
    observeEvent(input$"B-Shareholders1",{
      
+     wTable4$show()
      
      Transactions<-content(GET(url = "https://api-rinkeby.etherscan.io/api", query = list(module="account", action="txlist", 
                            address=ContractAddress, apikey=ApiKeyEtherscan)))
@@ -1263,7 +1546,7 @@ function(input, output, session){
     "))
      
      
-     output$table4<-renderTable({
+     output$table4<-DT::renderDT({
        
        a<-rbindlist(list(as.list(input$Enterprise_Shares)))
        
@@ -1272,8 +1555,11 @@ function(input, output, session){
        setnames(aa, 1, "Address")
        setcolorder(aa,  c(2,1))
        
-     }, filter="top")
+       DT::datatable(aa,  escape = FALSE, filter="top", style = "bootstrap4")
+       
+     })
      
+     wTable1$hide()
      
    })   
 
@@ -1466,9 +1752,13 @@ function(input, output, session){
    }) 
    
    
-   #5.22 Founder: End Enterprise 
+   #5.22 Financial transactions 
    
-   onclick("B-Financial1", {
+   wTable5 <- Waiter$new(id = "table5", color = transparent(.5), html = spin_loaders(15))
+   
+   observeEvent(input$"B-Financial1",{
+     
+     wTable5$show()
      
      runjs("
      
@@ -1523,36 +1813,41 @@ function(input, output, session){
     prueba();
     
     ")
-
      
-     output$table5<-renderTable({
+     
+     output$table5<-DT::renderDT({
        
        a<-data.table(input$Enterprise_Transactions)
        
        for( i in 1:max(input$Transactions_Q, 1) ) {
          
-      start<-9+20*(i-1)
-      end<-12+20*(i-1)
-       
-       a1<-a[c(3+20*(i-1),start:end)]
-       
-       a2<-data.table("a"=a1[1], "b"=a1[2], "c"=a1[3], "d"=a1[4], "e"=a1[5])
-       
-       if (i==1) {
-        
-        a3<-a2
+         start<-9+20*(i-1)
+         end<-12+20*(i-1)
          
-       } 
-       
-       else {
+         a1<-a[c(3+20*(i-1),start:end)]
          
-       a3<-rbindlist(list(a3, a2), use.names = TRUE)  
+         a2<-data.table("a"=a1[1], "b"=a1[2], "c"=a1[3], "d"=a1[4], "e"=a1[5])
          
-       }}
+         if (i==1) {
+           
+           a3<-a2
+           
+         } 
+         
+         else {
+           
+           a3<-rbindlist(list(a3, a2), use.names = TRUE)  
+           
+         }}
        
        setnames(a3, c("a.V1","b.V1","c.V1","d.V1","e.V1"), c("Block #","Account1", "Debit","Account2", "Credit"), skip_absent=TRUE)
        
-     }, filter="top")
+       
+       DT::datatable(a3,  escape = FALSE, filter="top", style = "bootstrap4")
+       
+     })
+     
+     wTable5$hide()
      
    }) 
     

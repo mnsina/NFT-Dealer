@@ -10,18 +10,28 @@ library(data.table)
 library(DT)
 library(httr)
 library(rjson)
+library(magick)
+library(shinyalert)
+library(waiter)
+
+
+#0) Custom warnings/errors
+
+options(shiny.error = function() {
+  stop("Please wait a few seconds...")
+})
 
 
 #1) Tabs
 
-   Login_Tab <- tabPanel(
+   Tab_Login <- tabPanel(
    title = icon("lock"), 
    value = "login", 
    shinyauthr::loginUI("login")
    )
 
   
-  Tab_1_1 <- tabPanel("Information", 
+   Tab_Company_1 <- tabPanel("Information", 
                       
   HTML("<h2 id='Who we are'>Who We Are:</h2>
   <p>We are an ERC-721 smart contract that buys and sells NFT tokens on the ethereum rinkeby network.</p>
@@ -48,7 +58,7 @@ library(rjson)
   )
   
   
-  Tab_1_2 <- tabPanel("Instructions", 
+   Tab_Company_2 <- tabPanel("Instructions", useWaiter(), 
                       
   HTML("<h2 id='use-this-dapp-'>Use this Dapp:</h2>
   <p>1) Download and create an account on Metamask:</p>"),
@@ -86,14 +96,14 @@ library(rjson)
   actionButton("B-ClientOffer2", "Refresh Clients Offers"),
   tabPanel("", title = icon("user"), wellPanel(
   tags$h2("", class = "text-center", style = "padding-top: 0;"),
-  tableOutput("table1")
+  DTOutput("table1")
   )),
   HTML("<br> &nbsp"),
   HTML(" <p>3) Use the function &quot;NFT_Enterprise_Bids&quot; to search the enterprise's bid linked to your offer.</p>"),
   actionButton("B-EnterpriseBid1", "Refresh Enterprise Bids"),
   tabPanel("", title = icon("user"), wellPanel(
   tags$h2("", class = "text-center", style = "padding-top: 0;"),
-  tableOutput("table2")
+  DTOutput("table2")
   )),
   HTML("<br> &nbsp"),
   
@@ -112,7 +122,7 @@ library(rjson)
   actionButton("B-EnterpriseOffers", "Refresh Enterprise Offers"),
   tabPanel("", title = icon("user"), wellPanel(
   tags$h2("", class = "text-center", style = "padding-top: 0;"),
-  tableOutput("table3")
+  DTOutput("table3")
   )),
   HTML("<br> &nbsp"),
   
@@ -131,7 +141,7 @@ library(rjson)
   )
   
   
-  Tab_1_3 <- tabPanel("Addresses", HTML("<br> The main addresses are listed below:
+   Tab_Company_3 <- tabPanel("Addresses", HTML("<br> The main addresses are listed below:
                                         <br> <br>"),
                       
                       useShinyjs(),
@@ -150,16 +160,16 @@ library(rjson)
                       textOutput("CFO", container = pre),
                       
                       actionButton("B-Founder", "Founder Address:"),
-                      textOutput("Founder", container = pre),
+                      textOutput("Founder", container = pre)#,
                       
-                      tags$script(src ="web3.js"),
-                      tags$script(src ="require.js")
+                      #tags$script(src ="web3.js"),
+                      #tags$script(src ="require.js") 
                       
   )
   
   
-  Tab_3_1 <- tabPanel(value="Register", title = icon("user"), wellPanel(
-             tags$h2("Please register", class = "text-center", style = "padding-top: 0;"),
+  Tab_Register <-   tabPanel(value="Register", title = icon("user"), wellPanel(
+                    tags$h2("Please register", class = "text-center", style = "padding-top: 0;"),
                       
                       useShinyjs(), style = "width: 500px; max-width: 100%; margin: 0 auto; padding: 20px;",
                       
@@ -175,16 +185,26 @@ library(rjson)
   ))
   
   
-  Tab_4_0 <- tabPanel("Financial Results", HTML("<br> All financial transactions are listed below: <br> <br>"),
+  
+  Tab_Investors_1 <- tabPanel("Shareholders", HTML("<br> All shareholders addresses are listed below: <br> <br>"),
+                              
+                     actionButton("B-Shareholders1", "Shareholders Addresses:"),
+                     tabPanel("", title = icon("user"), wellPanel(
+                     tags$h2("", class = "text-center", style = "padding-top: 0;"),
+                     DTOutput("table4")
+                     )),
+                     HTML("<br> &nbsp"))
+  
+  Tab_Investors_2 <- tabPanel("Financial Results", HTML("<br> All financial transactions are listed below: <br> <br>"),
                       
                       actionButton("B-Financial1", "Financial Transactions:"),
                       tabPanel("", title = icon("user"), wellPanel(
                       tags$h2("", class = "text-center", style = "padding-top: 0;"),
-                      tableOutput("table5")
+                      DTOutput("table5")
                       )),
                       HTML("<br> &nbsp"))
   
-  Tab_4_1 <- tabPanel("C-Levels", HTML("<h2 id='CEO Functions-'>CEO Functions:</h2>
+  Tab_Investors_3 <- tabPanel("C-Levels", HTML("<h2 id='CEO Functions-'>CEO Functions:</h2>
              <p>1) Review a client specific offer using the function &quot;NFT_CEO_Offer_Review&quot;:</p>"),
              tabPanel("", title = icon("user"), wellPanel(
              tags$h2("", class = "text-center", style = "padding-top: 0;"),
@@ -232,41 +252,25 @@ library(rjson)
              
              )
   
-  Tab_Investors_1 <- tabPanel("Shareholders", 
-  
-  HTML("<br> All shareholders addresses are listed below: <br> <br>"),
-    
-  actionButton("B-Shareholders1", "Shareholders Addresses:"),
-  tabPanel("", title = icon("user"), wellPanel(
-  tags$h2("", class = "text-center", style = "padding-top: 0;"),
-  tableOutput("table4")
-  )),
-  HTML("<br> &nbsp")
-    
-    
-  )
-  
-  
-  
   
   
 #2) Tab Panels
   
-  Tabsetpanel1 <- tabPanel("Company", fluidPage(tabsetPanel(
-    Tab_1_1,
-    Tab_1_2,
-    Tab_1_3
+  Tabs_Company <- tabPanel("Company", fluidPage(tabsetPanel(
+    Tab_Company_1,
+    Tab_Company_2,
+    Tab_Company_3,
+    tags$script(src ="web3.js")
   )))
   
-  Tabsetpanel2 <- tabPanel("Investors", fluidPage(tabsetPanel(
+  Tabs_Investors <- tabPanel("Investors", fluidPage(tabsetPanel(
                   Tab_Investors_1,
-                  Tab_4_0,
-                  Tab_4_1
-    
-    
+                  Tab_Investors_2,
+                  Tab_Investors_3,
+                  tags$script(src ="web3.js")
   )))
   
-  
+
   
   
 #3) App Layout
@@ -274,10 +278,14 @@ library(rjson)
   navbarPage("The Crypto Corp.", collapsible = TRUE, inverse = TRUE, theme = bs_theme(bg = "#005678", 
                                  fg = "#D1F7FF", primary = "#05D9E8", base_font = font_google("Prompt"),
                                  code_font = font_google("JetBrains Mono")), id="tabs",
-          Login_Tab,
-          Tabsetpanel1,
-          Tabsetpanel2,
-          Tab_3_1
+          Tab_Login,
+          Tabs_Company,
+          Tabs_Investors,
+          Tab_Register,
+          tags$head(tags$style(".shiny-output-error{color: white;}")),
+          tags$head(tags$style(".shiny-output-error{visibility: hidden}")),
+          tags$head(tags$style(".shiny-output-error:after{content: 'Loading... Please wait...';
+visibility: visible}"))
 )
 
 
