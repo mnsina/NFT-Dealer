@@ -47,7 +47,7 @@ options(shiny.error = function() {
   <h2 id='enterprise-etherscan-link-'>Enterprise Etherscan Link:</h2>"),
   
   actionButton("B_Etherscan1", "Go to Etherscan", class = "btn-success", style = "color: white;", 
-               onclick ="window.open('https://rinkeby.etherscan.io/address/0xf7659ece6c761cd39d1c739ef72668ce381f8305', '_blank')"),
+               onclick ="window.open('https://rinkeby.etherscan.io/address/0x8863de68a742cabe90c825c8f3611201397e444d', '_blank')"),
   
   HTML("<h2 id='enterprise-github-link-'>Enterprise Github Link:</h2>"),
   actionButton("B_Github", "Go to Github", class = "btn-success", style = "color: white;", 
