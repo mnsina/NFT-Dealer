@@ -34,7 +34,7 @@ A public firm that buys and sells NFT tokens on the ethereum network through the
 2) Use the function "NFT_Client_Buy" using the information of the previous step.
 
 ## Enterprise Etherscan Link:
-https://rinkeby.etherscan.io/address/0x8863de68a742cabe90c825c8f3611201397e444d
+https://goerli.etherscan.io/address/0x56305dd84673249753cfd7be4b1e070000e0cd25
 
 ## DApp Link:
 https://mnsina.shinyapps.io/Ethereum/
