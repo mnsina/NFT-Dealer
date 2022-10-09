@@ -34,7 +34,7 @@ options(shiny.error = function() {
    Tab_Company_1 <- tabPanel("Information", 
                       
   HTML("<h2 id='Who we are'>Who We Are:</h2>
-  <p>We are an ERC-721 smart contract that buys and sells NFT tokens on the ethereum rinkeby network.</p>
+  <p>We are an ERC-721 smart contract that buys and sells NFT tokens on the ethereum goerli network.</p>
   <h2 id='enterprise-characteristics-'>Enterprise Characteristics:</h2>
   <p>1) Stocks: There are 100 stocks without voting rights, each has a unit price of 0.01 ethers. </p>
   <p>2) Founder: Can change the CFO, CEO and end the enterprise. </p>
@@ -47,7 +47,7 @@ options(shiny.error = function() {
   <h2 id='enterprise-etherscan-link-'>Enterprise Etherscan Link:</h2>"),
   
   actionButton("B_Etherscan1", "Go to Etherscan", class = "btn-success", style = "color: white;", 
-               onclick ="window.open('https://rinkeby.etherscan.io/address/0x8863de68a742cabe90c825c8f3611201397e444d', '_blank')"),
+               onclick ="window.open('https://goerli.etherscan.io/address/0x56305dd84673249753cfd7be4b1e070000e0cd25', '_blank')"),
   
   HTML("<h2 id='enterprise-github-link-'>Enterprise Github Link:</h2>"),
   actionButton("B_Github", "Go to Github", class = "btn-success", style = "color: white;", 
@@ -58,14 +58,14 @@ options(shiny.error = function() {
   )
   
   
-   Tab_Company_2 <- tabPanel("Instructions", useWaiter(), 
+  Tab_Company_2 <- tabPanel("Instructions", useWaiter(), 
                       
   HTML("<h2 id='use-this-dapp-'>Use this Dapp:</h2>
   <p>1) Download and create an account on Metamask:</p>"),
   actionButton("B_Metamask1", "Download Metamask", class = "btn-success", style = "color: white;", 
                onclick ="window.open('https://metamask.io/download/', '_blank')"),
   HTML("<br> &nbsp"),
-  HTML("<p>2) Connect to your Metamask wallet on the rinkeby network:</p>"),
+  HTML("<p>2) Connect to your Metamask wallet on the goerli network:</p>"),
   actionButton("B_Metamask2", "Connect to Metamask", class = "btn-success", style = "color: white;"),
   
   
@@ -84,56 +84,50 @@ options(shiny.error = function() {
   
   HTML("<h2 id='sell-an-nft-'>Sell an NFT:</h2>
   <p>1) Please complete the following form to submit an offer:</p>"),
-  tabPanel("", title = icon("user"), wellPanel(
-  tags$h2("", class = "text-center", style = "padding-top: 0;"),
+  wellPanel(
   textInput("Client-Offer1", label = "NFT smart contract address:", value = ""),
   textInput("Client-Offer2", label = "NFT id:", value = ""),
   textInput("Client-Offer3", label = "NFT Price (wei):", value = ""),
-  actionButton("B-ClientOffer", "Submit Offer", class = "btn-warning", style = "color: white;"))),
+  actionButton("B-ClientOffer", "Submit Offer", class = "btn-warning", style = "color: white;")),
   HTML("<br> &nbsp"),
   
   HTML("<p>2) Check that the CEO has reviewed the offer using the function &quot;NFT_Clients_Offers&quot;.  </p>"),
   actionButton("B-ClientOffer2", "Refresh Clients Offers"),
-  tabPanel("", title = icon("user"), wellPanel(
-  tags$h2("", class = "text-center", style = "padding-top: 0;"),
+  wellPanel(
   DTOutput("table1")
-  )),
+  ),
   HTML("<br> &nbsp"),
   HTML(" <p>3) Use the function &quot;NFT_Enterprise_Bids&quot; to search the enterprise's bid linked to your offer.</p>"),
   actionButton("B-EnterpriseBid1", "Refresh Enterprise Bids"),
-  tabPanel("", title = icon("user"), wellPanel(
-  tags$h2("", class = "text-center", style = "padding-top: 0;"),
+  wellPanel(
   DTOutput("table2")
-  )),
+  ),
   HTML("<br> &nbsp"),
   
   HTML("<p>4) Approve control of the NFT token to the enterprise address (NFT Original Contract) and then use the function &quot;NFT_Client_Sell&quot; with the bid id that the CEO wrote on the previous step. </p>"),
-  tabPanel("", title = icon("user"), wellPanel(
-  tags$h2("", class = "text-center", style = "padding-top: 0;"),
+  wellPanel(
   textInput("Enterprise-Bid1", label = "NFT smart contract address:", value = ""),
   textInput("Enterprise-Bid2", label = "NFT id:", value = ""),
   textInput("Enterprise-Bid3", label = "Enterprise bid id:", value = ""),
   actionButton("B-ApproveControl", "Approve Control", class = "btn-warning", style = "color: white;"),
-  actionButton("B-ClientSell", "Sell NFT", class = "btn-warning", style = "color: white;"))),
+  actionButton("B-ClientSell", "Sell NFT", class = "btn-warning", style = "color: white;")),
   HTML("<br> &nbsp"),
   
   HTML("<h2 id='buy-an-nft-'>Buy an NFT:</h2>
   <p>1) Use the function &quot;NFT_Enterprise_Offers&quot; to search active offers.</p>"),
   actionButton("B-EnterpriseOffers", "Refresh Enterprise Offers"),
-  tabPanel("", title = icon("user"), wellPanel(
-  tags$h2("", class = "text-center", style = "padding-top: 0;"),
+  wellPanel(
   DTOutput("table3")
-  )),
+  ),
   HTML("<br> &nbsp"),
   
   HTML("<p>2) Use the function &quot;NFT_Client_Buy&quot; using the information of the previous step.</p>"),
-  tabPanel("", title = icon("user"), wellPanel(
-  tags$h2("", class = "text-center", style = "padding-top: 0;"),
+  wellPanel(
   textInput("Client-Buy1", label = "NFT smart contract address:", value = ""),
   textInput("Client-Buy2", label = "NFT id:", value = ""),
   textInput("Client-Buy3", label = "Enterprise offer id:", value = ""),
   textInput("Client-Buy4", label = "Price (wei):", value = ""),
-  actionButton("B-ClientBuy", "Buy NFT", class = "btn-warning", style = "color: white;"))),
+  actionButton("B-ClientBuy", "Buy NFT", class = "btn-warning", style = "color: white;")),
   
   
   HTML("<br> &nbsp"),                    
@@ -287,5 +281,4 @@ options(shiny.error = function() {
           tags$head(tags$style(".shiny-output-error:after{content: 'Loading... Please wait...';
 visibility: visible}"))
 )
-
 
