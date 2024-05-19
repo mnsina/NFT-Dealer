@@ -1,9 +1,9 @@
 # NFT-Dealer
-A public firm that buys and sells NFT tokens on the ethereum network through the use of an ERC721 smart contract.
+A public firm that buys and sells NFT tokens on the Polygon network through the use of an ERC721 smart contract.
 
 ## Enterprise Characteristics:
 
-1) Stocks: There are 100 unissued stocks without voting rights, each has a unit price of 0.01 ethers. 
+1) Stocks: There are 100 unissued stocks without voting rights, each has a unit price of 0.01 Matic. 
  
 2) Founder: Can change the CFO, CEO and end the enterprise. 
  
@@ -33,8 +33,8 @@ A public firm that buys and sells NFT tokens on the ethereum network through the
  
 2) Use the function "NFT_Client_Buy" using the information of the previous step.
 
-## Enterprise Etherscan Link:
-https://goerli.etherscan.io/address/0x56305dd84673249753cfd7be4b1e070000e0cd25
+## Enterprise Polygonscan Link:
+https://polygonscan.com/address/0x9d42afbf7461ae6f40db39e28b5baebaefc710ed
 
 ## DApp Link:
 https://mnsina.shinyapps.io/Ethereum/
